@@ -528,19 +528,31 @@
 }
 
 -(NSString *) getGrammarContentForHeader: (int) groupId {
-   //Used when choosing from a list of grammar items in the current unit - indexUnit is the chosen one, so get its groupId from the group_header then get the right one
-    NSString *result;
-    NSString *query =  [NSString stringWithFormat: @"SELECT html FROM grammar WHERE groupId = %i;", groupId];
-    sqlite3_stmt *statement;
-	if (sqlite3_prepare_v2( lessonDBase, [query UTF8String], -1, &statement, nil ) == SQLITE_OK){
-		if (sqlite3_step(statement) == SQLITE_ROW) {
-            result = [self utf8StringFromStatement: statement atPosition: 0];
-		}
-	}
-	sqlite3_finalize(statement);
+    //Used when choosing from a list of grammar items in the current unit - indexUnit is the chosen one, so get its groupId from the group_header then get the right one
+    NSString *result = @"";
+    NSString *query;
+    if ([self isNorth]){
+        query =  [NSString stringWithFormat: @"SELECT htmlNorth FROM grammar WHERE groupId = %i;", groupId];
+        sqlite3_stmt *statement;
+        if (sqlite3_prepare_v2( lessonDBase, [query UTF8String], -1, &statement, nil ) == SQLITE_OK){
+            if (sqlite3_step(statement) == SQLITE_ROW) {
+                result = [self utf8StringFromStatement: statement atPosition: 0];
+            }
+        }
+        sqlite3_finalize(statement);
+    }
+    if ([result isEqualToString:@""]) {
+        query =  [NSString stringWithFormat: @"SELECT html FROM grammar WHERE groupId = %i;", groupId];
+        sqlite3_stmt *statement;
+	    if (sqlite3_prepare_v2( lessonDBase, [query UTF8String], -1, &statement, nil ) == SQLITE_OK){
+	    	if (sqlite3_step(statement) == SQLITE_ROW) {
+                result = [self utf8StringFromStatement: statement atPosition: 0];
+		    }
+        }
+        sqlite3_finalize(statement);
+    }
     return result;
 }
-
 
 - (NSArray *) getListOfGrammarTitles{ 
     // This method returns an ordered array of group_headers
